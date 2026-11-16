@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Surat Penawaran Resmi — Veyra Educate &amp; CBT Online</title>
+    <title>{{ $marketing_page?->title ?? 'Surat Penawaran Resmi — Veyra Educate &amp; CBT Online' }}</title>
+    <meta name="description" content="{{ $marketing_page?->description ?? 'Proposal resmi untuk keperluan presentasi kepada dinas pendidikan, kepala sekolah, dan pemangku kepentingan. Format A4 siap cetak dengan branding profesional.' }}">
     <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,6 +92,30 @@
         return Math.round((this.totalSavings / this.totalPaperCostYearly) * 100);
     }
 }">
+
+    @if ($marketing_page)
+        <div class="no-print py-8 bg-gradient-to-b from-brand-50 to-white dark:from-slate-900 dark:to-slate-950 border-b border-brand-100 dark:border-slate-800">
+            <div class="container-site text-center max-w-2xl mx-auto px-4">
+                @if ($marketing_page->eyebrow)
+                    <p class="text-xs font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400 mb-3">{{ $marketing_page->eyebrow }}</p>
+                @endif
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-ink dark:text-white leading-tight">
+                    {{ $marketing_page->title }}
+                </h1>
+                @if ($marketing_page->description)
+                    <p class="mt-3 text-sm sm:text-base text-muted dark:text-slate-400 leading-relaxed">
+                        {!! nl2br(e($marketing_page->description)) !!}
+                    </p>
+                @endif
+                @if ($marketing_page->cta_text && $marketing_page->cta_url)
+                    <a href="{{ $marketing_page->cta_url }}" class="btn-primary inline-flex items-center gap-2 px-6 py-2.5 text-sm mt-5">
+                        {{ $marketing_page->cta_text }}
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </a>
+                @endif
+            </div>
+        </div>
+    @endif
 
     {{-- Top Action Bar (Hidden when Printing) --}}
     <div class="no-print sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-xs">

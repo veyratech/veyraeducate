@@ -1,7 +1,6 @@
 <x-marketing-layout
-    title="Brosur Digital — Veyra Educate & CBT Online"
-    description="Brosur resmi digitalisasi ujian sekolah berbasis komputer (CBT Online) dan portal aplikasi Veyra Educate. Hemat jutaan rupiah biaya cetak kertas, 100% cloud, dan ramah SPJ Dana BOS."
->
+    title="{{ $marketing_page?->title ?? 'Brosur Digital — Veyra Educate & CBT Online' }}"
+    description="{{ $marketing_page?->description ?? 'Brosur resmi digitalisasi ujian sekolah berbasis komputer (CBT Online) dan portal aplikasi Veyra Educate. Hemat jutaan rupiah biaya cetak kertas, 100% cloud, dan ramah SPJ Dana BOS.' }}">
     {{-- Print Optimization Styles --}}
     <style>
         @media print {

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\DeploymentController;
 use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\HomepageSectionController;
 use App\Http\Controllers\Admin\LinkAccessController;
+use App\Http\Controllers\Admin\MarketingPagesController;
 use App\Http\Controllers\Admin\PaymentOrderController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\ReferralClaimController;
@@ -157,6 +158,13 @@ Route::middleware(['auth', 'admin', 'throttle:admin'])->prefix('admin')->name('a
     Route::middleware(['super.admin'])->group(function () {
         Route::delete('/pengumuman/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
     });
+
+    Route::get('/halaman-marketing', [MarketingPagesController::class, 'index'])->name('marketing-pages.index');
+    Route::get('/halaman-marketing/baru', [MarketingPagesController::class, 'create'])->name('marketing-pages.create');
+    Route::post('/halaman-marketing', [MarketingPagesController::class, 'store'])->name('marketing-pages.store');
+    Route::get('/halaman-marketing/{marketingPage}/edit', [MarketingPagesController::class, 'edit'])->name('marketing-pages.edit');
+    Route::put('/halaman-marketing/{marketingPage}', [MarketingPagesController::class, 'update'])->name('marketing-pages.update');
+    Route::delete('/halaman-marketing/{marketingPage}', [MarketingPagesController::class, 'destroy'])->name('marketing-pages.destroy');
 
     Route::get('/permintaan-aplikasi', [AdminAppRequestController::class, 'index'])->name('app-requests.index');
     Route::put('/permintaan-aplikasi/{appRequest}/status', [AdminAppRequestController::class, 'updateStatus'])

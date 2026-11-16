@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\MarketingPage;
 use Illuminate\View\View;
 
 class DemoController extends Controller
@@ -22,7 +23,9 @@ class DemoController extends Controller
      */
     public function show(): View
     {
-        return view('pages.demo');
+        $page = MarketingPage::query()->where('slug', 'demo')->first();
+
+        return view('pages.demo', ['marketing_page' => $page]);
     }
 
     /**

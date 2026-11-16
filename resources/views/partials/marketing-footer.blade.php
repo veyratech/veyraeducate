@@ -34,6 +34,7 @@
                     <li><a class="text-sm font-semibold text-brand-600 dark:text-brand-400 hover:underline transition-colors" href="/proposal">Proposal Resmi</a></li>
                     <li><a class="text-sm text-slate-600 dark:text-slate-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors" href="/tentang">Tentang</a></li>
                     <li><a class="text-sm text-slate-600 dark:text-slate-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors" href="/faq">FAQ</a></li>
+                    <li><a class="text-sm font-semibold text-brand-600 dark:text-brand-400 hover:underline transition-colors" href="/kabar">Kabar Veyra</a></li>
                 </ul>
             </div>
 

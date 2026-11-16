@@ -7,11 +7,12 @@
 
         <nav class="hidden items-center gap-1 lg:flex px-2 py-1 rounded-full bg-slate-100/70 dark:bg-slate-900/70 border border-slate-200/60 dark:border-slate-800/60 backdrop-blur-md" aria-label="Navigasi utama">
             @foreach ([
-                ['fitur', 'Fitur'],
-                ['harga', 'Harga'],
-                ['demo', 'Demo'],
-                ['brosur', 'Brosur'],
-                ['proposal', 'Proposal'],
+                 ['fitur', 'Fitur'],
+                 ['harga', 'Harga'],
+                 ['demo', 'Demo'],
+                 ['kabar', 'Kabar'],
+                 ['brosur', 'Brosur'],
+                 ['proposal', 'Proposal'],
                 ['tentang', 'Tentang'],
                 ['kontak', 'Kontak'],
             ] as [$slug, $label])

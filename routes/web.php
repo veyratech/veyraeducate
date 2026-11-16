@@ -6,6 +6,7 @@ use App\Http\Controllers\AppShowController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DemoController;
+use App\Http\Controllers\MarketingPagesController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SchoolBroadcastController;
@@ -89,16 +90,18 @@ Route::middleware(['https.redirect', 'throttle:global'])->group(function () {
     foreach ([
         'fitur' => 'pages.fitur',
         'harga' => 'pages.harga',
-        'brosur' => 'pages.brosur',
-        'proposal' => 'pages.proposal',
         'tentang' => 'pages.tentang',
         'kontak' => 'pages.kontak',
         'faq' => 'pages.faq',
+        'kabar' => 'pages.kabar',
         'kebijakan-privasi' => 'pages.kebijakan-privasi',
         'syarat-ketentuan' => 'pages.syarat-ketentuan',
     ] as $slug => $view) {
         Route::view($slug, $view)->name($slug);
     }
+
+    Route::get('/brosur', fn () => app(\App\Http\Controllers\MarketingPagesController::class)->show('brosur'))->name('brosur');
+    Route::get('/proposal', fn () => app(\App\Http\Controllers\MarketingPagesController::class)->show('proposal'))->name('proposal');
 
     Route::middleware('auth')->group(function () {
         Route::get('/checkout/{planCode}', [CheckoutController::class, 'show'])

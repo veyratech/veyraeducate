@@ -1,20 +1,33 @@
 <x-marketing-layout
-    title="Demo Interaktif — Coba Veyra Educate & CBT Online"
-    description="Uji coba langsung antarmuka ujian CBT siswa dari browser Anda dan akses portal demo manajemen sekolah tanpa perlu instalasi rumit.">
+    title="{{ $marketing_page?->title ?? 'Demo Interaktif — Coba Veyra Educate & CBT Online' }}"
+    description="{{ $marketing_page?->description ?? 'Uji coba langsung antarmuka ujian CBT siswa dari browser Anda dan akses portal demo manajemen sekolah tanpa perlu instalasi rumit.' }}">
 
     {{-- Hero Section --}}
     <section class="border-b border-brand-100 bg-gradient-to-b from-brand-50/70 via-white to-white dark:border-slate-800 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950">
         <div class="container-site section pb-12 sm:pb-16 text-center">
-            <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-3.5 py-1 text-xs font-bold mb-4 shadow-sm">
-                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                SIMULASI &amp; DEMO SISTEM INTERAKTIF
-            </div>
+            @if ($marketing_page?->eyebrow)
+                <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-3.5 py-1 text-xs font-bold mb-4 shadow-sm">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    {{ $marketing_page->eyebrow }}
+                </div>
+            @else
+                <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-3.5 py-1 text-xs font-bold mb-4 shadow-sm">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    SIMULASI &amp; DEMO SISTEM INTERAKTIF
+                </div>
+            @endif
             <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-ink dark:text-white max-w-4xl mx-auto leading-tight">
                 Rasakan Pengalaman Ujian CBT &amp; Portal Sekolah Secara Nyata
             </h1>
-            <p class="mt-4 text-sm sm:text-base lg:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
-                Uji langsung antarmuka pengerjaan soal siswa langsung di browser Anda, atau masuk ke portal sekolah simulasi dengan <strong>1-klik tanpa password</strong> untuk melihat dashboard manajemen dan kwitansi BOS.
-            </p>
+            @if ($marketing_page?->description)
+                <p class="mt-4 text-sm sm:text-base lg:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
+                    {!! nl2br(e($marketing_page->description)) !!}
+                </p>
+            @else
+                <p class="mt-4 text-sm sm:text-base lg:text-lg text-muted max-w-2xl mx-auto leading-relaxed">
+                    Uji langsung antarmuka pengerjaan soal siswa langsung di browser Anda, atau masuk ke portal sekolah simulasi dengan <strong>1-klik tanpa password</strong> untuk melihat dashboard manajemen dan kwitansi BOS.
+                </p>
+            @endif
 
             <div class="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
                 <a href="#simulator" class="btn-primary inline-flex items-center gap-2 px-6 py-3 text-sm">
@@ -22,9 +35,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Coba Simulator CBT Siswa</span>
+                    <span>{{ $marketing_page?->cta_text ?? 'Coba Simulator CBT Siswa' }}</span>
                 </a>
-                
+
                 <form action="{{ route('demo.login') }}" method="POST" class="inline">
                     @csrf
                     <button type="submit" class="btn-secondary inline-flex items-center gap-2 px-6 py-3 text-sm hover:border-brand-500 hover:text-brand-600 transition">

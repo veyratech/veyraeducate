@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             CbtWebAppSeeder::class,
             AppCatalogSeeder::class,
             AnnouncementSeeder::class,
+            MarketingPagesSeeder::class,
         ]);
 
         User::query()->firstOrCreate(
