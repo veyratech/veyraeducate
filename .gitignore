@@ -1,0 +1,62 @@
+# ============================================
+# VEYRA EDUCATE — .gitignore
+# ============================================
+
+# Environment & secrets
+.env
+.env.local
+.env.production
+!.env.example
+
+# Dependencies
+vendor/
+node_modules/
+
+# Storage (uploaded files, logs, cache)
+storage/framework/cache/*
+!storage/framework/cache/.gitignore
+storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+storage/framework/views/*
+!storage/framework/views/.gitignore
+storage/logs/*
+!storage/logs/.gitignore
+storage/app/public/*
+!storage/app/public/.gitignore
+storage/app/private/*
+!storage/app/private/.gitignore
+storage/app/marketing/*
+!storage/app/marketing/.gitignore
+storage/app/settings/*
+!storage/app/settings/.gitignore
+storage/backups/*
+!.gitignore
+
+# Public storage symlink (akan dibuat otomatis di server)
+public/storage
+!public/storage/.gitignore
+
+# Build output
+build/
+manifest.json
+css/
+
+# PHP unit cache
+.phpunit.result.cache
+
+# IDE & editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Zip backup
+*.zip
+
+# Composer lock (opsional — uncomment jika ingin commit)
+# composer.lock
