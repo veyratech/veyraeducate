@@ -4,7 +4,7 @@
 # Jalankan setelah upload file ke server
 # ============================================
 
-APP_PATH="/home/u77oazzk/public_html"
+APP_PATH="/home/u77oazzk/public_html/VEYRA"
 
 echo "=== Veyra Educate Deploy Script ==="
 echo ""
