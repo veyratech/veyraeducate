@@ -20,17 +20,27 @@ use App\Models\HomepageSection;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
-// Custom storage file serving — placed OUTSIDE middleware to avoid auth requirement
+// Custom storage file serving — served directly via readfile() to avoid finfo dependency
 Route::get('storage/{path}', function (string $path) {
     $cleanPath = str_replace(['..', "\0"], '', $path);
-    abort_unless($cleanPath !== '' && Storage::disk('public')->exists($cleanPath), 404);
 
-    return Storage::disk('public')->response($cleanPath, null, [
-        'Cache-Control' => 'public, max-age=31536000, immutable',
-    ]);
+    if ($cleanPath === '') {
+        abort(404, 'Empty storage path');
+    }
+
+    $fullPath = storage_path('app/public/' . $cleanPath);
+
+    if (!file_exists($fullPath)) {
+        return response()->json(['error' => 'File not found', 'path' => $cleanPath], 404);
+    }
+
+    header('Cache-Control: public, max-age=31536000, immutable');
+    readfile($fullPath);
+    exit;
 })->where('path', '.*')->name('storage.fallback');
 
 Route::middleware(['https.redirect', 'throttle:global'])->group(function () {

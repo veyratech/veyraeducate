@@ -49,20 +49,13 @@
     45 => 'Illuminate\\Translation\\TranslationServiceProvider',
     46 => 'Illuminate\\Validation\\ValidationServiceProvider',
     47 => 'Illuminate\\View\\ViewServiceProvider',
-    48 => 'Laravel\\Boost\\BoostServiceProvider',
-    49 => 'Laravel\\Breeze\\BreezeServiceProvider',
-    50 => 'Laravel\\Mcp\\Server\\McpServiceProvider',
-    51 => 'Laravel\\Pail\\PailServiceProvider',
-    52 => 'Laravel\\Pao\\Laravel\\ServiceProvider',
-    53 => 'Laravel\\Roster\\RosterServiceProvider',
-    54 => 'Laravel\\Sanctum\\SanctumServiceProvider',
-    55 => 'Laravel\\Tinker\\TinkerServiceProvider',
-    56 => 'Carbon\\Laravel\\ServiceProvider',
-    57 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
-    58 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    59 => 'App\\Providers\\AppServiceProvider',
-    60 => 'App\\Providers\\SchoolScopeServiceProvider',
-    61 => 'App\\Providers\\SchoolAppViewServiceProvider',
+    48 => 'Laravel\\Sanctum\\SanctumServiceProvider',
+    49 => 'Laravel\\Tinker\\TinkerServiceProvider',
+    50 => 'Carbon\\Laravel\\ServiceProvider',
+    51 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    52 => 'App\\Providers\\AppServiceProvider',
+    53 => 'App\\Providers\\SchoolScopeServiceProvider',
+    54 => 'App\\Providers\\SchoolAppViewServiceProvider',
   ),
   'eager' => 
   array (
@@ -86,18 +79,12 @@
     17 => 'Illuminate\\Pagination\\PaginationServiceProvider',
     18 => 'Illuminate\\Session\\SessionServiceProvider',
     19 => 'Illuminate\\View\\ViewServiceProvider',
-    20 => 'Laravel\\Boost\\BoostServiceProvider',
-    21 => 'Laravel\\Mcp\\Server\\McpServiceProvider',
-    22 => 'Laravel\\Pail\\PailServiceProvider',
-    23 => 'Laravel\\Pao\\Laravel\\ServiceProvider',
-    24 => 'Laravel\\Roster\\RosterServiceProvider',
-    25 => 'Laravel\\Sanctum\\SanctumServiceProvider',
-    26 => 'Carbon\\Laravel\\ServiceProvider',
-    27 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
-    28 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    29 => 'App\\Providers\\AppServiceProvider',
-    30 => 'App\\Providers\\SchoolScopeServiceProvider',
-    31 => 'App\\Providers\\SchoolAppViewServiceProvider',
+    20 => 'Laravel\\Sanctum\\SanctumServiceProvider',
+    21 => 'Carbon\\Laravel\\ServiceProvider',
+    22 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    23 => 'App\\Providers\\AppServiceProvider',
+    24 => 'App\\Providers\\SchoolScopeServiceProvider',
+    25 => 'App\\Providers\\SchoolAppViewServiceProvider',
   ),
   'deferred' => 
   array (
@@ -261,7 +248,6 @@
     'validator' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'validation.presence' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'Illuminate\\Contracts\\Validation\\UncompromisedVerifier' => 'Illuminate\\Validation\\ValidationServiceProvider',
-    'Laravel\\Breeze\\Console\\InstallCommand' => 'Laravel\\Breeze\\BreezeServiceProvider',
     'command.tinker' => 'Laravel\\Tinker\\TinkerServiceProvider',
   ),
   'when' => 
@@ -306,9 +292,6 @@
     array (
     ),
     'Illuminate\\Validation\\ValidationServiceProvider' => 
-    array (
-    ),
-    'Laravel\\Breeze\\BreezeServiceProvider' => 
     array (
     ),
     'Laravel\\Tinker\\TinkerServiceProvider' => 

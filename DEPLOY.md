@@ -2,33 +2,32 @@
 
 Host target: **PHP.ID** (CloudLinux + cPanel)
 Domain: `https://veyracreative.site`
+Folder di server: `/public_html/VEYRA/`
 
 ---
 
-## Tahap 0 — Persiapan di Komputer Lokal
+## Struktur Aplikasi
 
-### 0.1 Cek Struktur Folder
-
-Pastikan struktur folder di lokal seperti ini:
+Aplikasi ini menggunakan **struktur non-standar Laravel**: `index.php` berada di **root folder**, bukan di folder `public/`. Semua file diupload langsung ke `public_html/VEYRA/`.
 
 ```
-veyraeducate/
-├── app/
-├── bootstrap/
-├── config/
-├── database/
-├── public/          ← JANGAN upload folder ini ke root hosting
-├── resources/
-├── routes/
-├── storage/
-├── vendor/
-├── .env.production
-├── .htaccess
-├── index.php
+public_html/VEYRA/
+├── app/              ← kode sumber utama
+├── bootstrap/        ← autoloader & bootstrap
+├── config/           ← konfigurasi Laravel
+├── database/         ← migrations & seeders
+├── public/           ← aset statis (build output, css, js, images)
+│   └── storage/      ← symlink ke storage/app/public
+├── resources/        ← views, lang, raw assets
+├── routes/           ← routing aplikasi
+├── storage/          ← logs, cache, uploaded files
+├── vendor/           ← composer packages (sudah termasuk di ZIP deploy)
+├── .env.production   ← template environment
+├── .htaccess         ← URL rewriting & security
+├── index.php         ← front controller utama
+├── artisan           ← command line Laravel
 └── composer.json
 ```
-
-Catatan penting: **folder `public/` TIDAK DIUPLOAD**. Yang diupload adalah isi dalam `public/` langsung ke `public_html/`.
 
 ---
 
@@ -37,15 +36,15 @@ Catatan penting: **folder `public/` TIDAK DIUPLOAD**. Yang diupload adalah isi d
 ### 1.1 Buat Database
 
 1. Login cPanel → **MySQL Databases**
-2. Buat database baru, catat namanya (contoh: `u77oazzk_webveyra`)
-3. Buat user database baru, catat username & password
-4. Assign user ke database dengan semua privilege
+2. Klik **Create Database**, beri nama (contoh: `u77oazzk_webveyra`)
+3. Klik **Create User**, isi username & password, simpan
+4. Tambahkan user ke database → centang **ALL PRIVILEGES** → **Make Changes**
 
 ### 1.2 Setting PHP Version
 
 1. cPanel → **Select PHP Version** atau **MultiPHP Manager**
 2. Pilih PHP **8.3** atau lebih tinggi
-3. Aktifkan ekstensi berikut jika belum:
+3. Pastikan ekstensi berikut aktif:
    - `pdo_mysql`
    - `mbstring`
    - `openssl`
@@ -53,174 +52,124 @@ Catatan penting: **folder `public/` TIDAK DIUPLOAD**. Yang diupload adalah isi d
    - `tokenizer`
    - `json`
    - `xml`
-   - `ctype`
    - `fileinfo`
 
 ### 1.3 Point Domain ke Folder yang Benar
 
 1. cPanel → **Domains** → kelola domain `veyracreative.site`
-2. Root document harus指向 ke `public_html/` (bukan subfolder)
+2. Root document harus mengarah ke `public_html/VEYRA/` (bukan subfolder)
 
 ---
 
 ## Tahap 2 — Upload File
 
-### 2.1 Cara Upload (Pilih Salah Satu)
+### 2.1 Upload ZIP ke cPanel
 
-**Opsi A: Via Git (paling direkomendasikan)**
-```bash
-# Di server SSH
-cd /home/u77oazzk/public_html
-git clone https://github.com/username/veyraeducate.git .
-```
+1. Buka **File Manager** di cPanel → masuk ke `public_html/VEYRA/`
+2. Upload file `veyra-educate-deploy.zip` (~29 MB)
+3. Klik **Extract** pada file ZIP tersebut
+4. Hapus file `.zip` setelah selesai diekstrak
 
-**Opsi B: Via File Manager cPanel**
-1. Buka **File Manager** → masuk ke `public_html/`
-2. Upload file-fichier berikut (exclude folder `vendor/` dan `.git/`):
-   - `.env.production`
-   - `.htaccess`
-   - `index.php`
-   - `artisan`
-   - Semua folder: `app/`, `bootstrap/`, `config/`, `database/`, `public/`, `resources/`, `routes/`, `storage/`
-3. Upload file dari `public/` lokal ke `public_html/`:
-   - Copy isi `public/` (termasuk `.htaccess` dari public) ke `public_html/`
+> **Catatan:** Archief `veyra-educate-deploy.zip` sudah include semua file `vendor/`. Tidak perlu composer install.
 
-**Opsi C: Via FTP**
-1. Gunakan FileZilla / FTP client
-2. Connect ke server PHP.ID
-3. Upload seluruh file kecuali `vendor/` dan `node_modules/`
+---
 
-### 2.2 Setelah Upload Selesai
+## Tahap 3 — Konfigurasi Awal di Server
 
-Masuk ke terminal/server via SSH atau File Manager cPanel, lalu jalankan:
+Setelah extract, jalankan perintah berikut via SSH atau terminal cPanel:
 
 ```bash
-cd /home/u77oazzk/public_html
+cd /home/u77oazzk/public_html/VEYRA
 
-# Install composer dependencies (tanpa dev packages)
-composer install --no-dev --optimize-autoloader
+# 1. Buat folder storage required
+mkdir -p storage/app/public
+mkdir -p storage/framework/cache/data
+mkdir -p storage/framework/views
+mkdir -p storage/framework/sessions
+mkdir -p storage/logs
 
-# Buat file .env dari template production
+# 2. Buat symlink storage
+ln -sf storage/app/public public/storage
+
+# 3. Set permission
+chmod -R 775 storage
+chmod -R 775 bootstrap/cache
+
+# 4. Copy .env dari template production
 cp .env.production .env
 
-# Edit .env, ganti nilai yang masih placeholder
+# 5. Regenerate autoload (safety step)
+php composer dump-autoload --optimize
+```
+
+---
+
+## Tahap 4 — Edit Konfigurasi (.env)
+
+Edit file `.env`:
+
+```bash
 nano .env
 ```
 
-Hal yang WAJIB diubah di `.env`:
+**Nilai yang WAJIB diisi:**
 
 ```ini
-# Ganti dengan password database kamu
-DB_PASSWORD=PASSWORD_YG_SUDAH_DIBUAT_DI_Cpanel
+# Password database dari Tahap 1.1
+DB_PASSWORD=MASUKKAN_PASSWORD_DATABASE_KAMU
 
-# Ganti dengan key Midtrans (sandbox atau production)
+# Kunci Midtrans (sandbox untuk testing, production untuk live)
 MIDTRANS_SERVER_KEY=YOUR_SERVER_KEY
 MIDTRANS_CLIENT_KEY=YOUR_CLIENT_KEY
 ```
 
-### 2.3 Generate Application Key
+**Simpan dan keluar** (`Ctrl+X`, `Y`, `Enter`).
+
+---
+
+## Tahap 5 — Generate Application Key
 
 ```bash
 php artisan key:generate --force
 ```
 
-Ini akan membuat `APP_KEY` baru di `.env`. Jika sudah ada key yang valid dari lokal, gunakan key yang sama agar session tidak invalid.
+> Jika `APP_KEY` di `.env.production` sudah valid, bisa dilewati. Hanya generate ulang jika ingin key baru.
 
 ---
 
-## Tahap 3 — Migrasi Database
+## Tahap 6 — Migrasi Database
 
 ```bash
-# Jalankan semua migrasi
 php artisan migrate --force
 ```
 
-Pastikan output semua migration `[Ran]`. Jika ada error, baca pesan error dan perbaiki.
+Pastikan output semua migration menunjukkan `[Ran]`. Tabel yang dibuat:
 
-Tabel yang dibuat otomatis:
-- `users`, `sessions` (untuk auth)
-- `cache` (untuk cache)
-- `jobs`, `failed_jobs` (untuk queue)
-- Semua tabel aplikasi
-
----
-
-## Tahap 4 — Buat Storage Symlink
-
-Symlink wajib ada agar file upload bisa diakses via web.
-
-**Via SSH:**
-```bash
-cd /home/u77oazzk/public_html
-ln -sf /home/u77oazzk/public_html/storage/app/public /home/u77oazzk/public_html/public/storage
-```
-
-**Via File Manager cPanel:**
-1. Buka `public_html/`
-2. Klik kanan `storage` → **Symbolic Link**
-3. Target: `/home/u77oazzk/public_html/storage/app/public`
-4. Nama link: `storage`
-
-Verifikasi:
-```bash
-ls -la /home/u77oazzk/public_html/public/storage
-# Harus muncul: storage -> /home/u77oazzk/.../storage/app/public
-```
-
-Test akses: buka URL `https://veyracreative.site/storage/app/public/test.txt` (buat file test dulu).
+- `users` — data pengguna & admin
+- `schools` — data sekolah
+- `plans`, `subscriptions`, `payment_orders` — sistem pembayaran
+- `web_apps`, `school_web_apps` — aplikasi sekolah
+- `homepage_sections` — halaman beranda dinamis
+- `marketing_pages` — halaman marketing (brosur/proposal/demo)
+- `sessions`, `cache`, `jobs`, `notifications`, `audit_logs` — sistem internal
 
 ---
 
-## Tahap 5 — Optimasi Produksi
+## Tahap 7 — Optimasi Produksi
 
 ```bash
 # Clear semua cache
-php artisan config:clear
-php artisan cache:clear
-php artisan route:clear
-php artisan view:clear
+php artisan optimize:clear
 
 # Cache konfigurasi & route untuk performa
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-
-# Set permission folder
-chmod -R 775 /home/u77oazzk/public_html/storage
-chmod -R 775 /home/u77oazzk/public_html/bootstrap/cache
 ```
 
 ---
 
-## Tahap 6 — Queue Worker (Opsional tapi Disarankan)
-
-Karena `QUEUE_CONNECTION=database`, perlu worker yang berjalan terus.
-
-**Via Cron Job (cPanel):**
-1. cPanel → **Cron Jobs**
-2. Tambah cron job setiap menit:
-```
-* * * * * cd /home/u77oazzk/public_html && php artisan queue:work --stop-when-empty
-```
-
-Atau gunakan supervisor (jika ada akses SSH penuh):
-```bash
-# Instal supervisor
-sudo apt install supervisor
-
-# Buat config /etc/supervisor/conf.d/veyra-queue.conf
-[program:veyra-queue]
-command=php /home/u77oazzk/public_html/artisan queue:work database --sleep=3 --tries=3 --max-time=3600
-directory=/home/u77oazzk/public_html
-autostart=true
-autorestart=true
-stderr_logfile=/var/log/veyra-queue.err.log
-stdout_logfile=/var/log/veyra-queue.out.log
-```
-
----
-
-## Tahap 7 — SSL & HTTPS
+## Tahap 8 — SSL & HTTPS
 
 1. cPanel → **SSL/TLS** → **AutoSSL**
 2. Pilih domain `veyracreative.site`
@@ -234,52 +183,56 @@ APP_URL=https://veyracreative.site
 
 ---
 
-## Tahap 8 — Verifikasi Akhir
+## Tahap 9 — Queue Worker (Opsional)
 
-Jalankan semua command ini satu per satu:
+Karena `QUEUE_CONNECTION=database`, queue perlu worker yang berjalan terus.
 
-```bash
-# Cek status migration
-php artisan migrate:status
-
-# Cek health endpoint
-curl https://veyracreative.site/health
-
-# Test login admin (via browser)
-# Buka https://veyracreative.site/admin/login
+**Via Cron Job (cPanel):**
+1. cPanel → **Cron Jobs**
+2. Tambah cron job setiap menit:
+```
+* * * * * cd /home/u77oazzk/public_html/VEYRA && php artisan queue:work --stop-when-empty
 ```
 
 ---
 
-## Troubleshooting Umum
+## Tahap 10 — Verifikasi Akhir
+
+Buka browser dan akses:
+- Beranda: **https://veyracreative.site**
+- Admin panel: **https://veyracreative.site/admin/login**
+
+---
+
+## Checklist Cepat
+
+```
+[ ] 1. Database created di cPanel (catat nama DB, user, password)
+[ ] 2. PHP version = 8.3+ dengan ekstensi lengkap
+[ ] 3. Domain pointed ke public_html/VEYRA/
+[ ] 4. Extract veyra-educate-deploy.zip di public_html/VEYRA/
+[ ] 5. .env dibuat dari .env.production & diedit (DB_PASSWORD, MIDTRANS)
+[ ] 6. php composer dump-autoload --optimize
+[ ] 7. php artisan key:generate --force
+[ ] 8. php artisan migrate --force
+[ ] 9. Storage symlink dibuat (ln -sf storage/app/public public/storage)
+[ ] 10. chmod 775 storage & bootstrap/cache
+[ ] 11. php artisan optimize:clear
+[ ] 12. AutoSSL dijalankan
+[ ] 13. Cron job queue worker (opsional)
+[ ] 14. Verifikasi https://veyracreative.site/admin/login
+```
+
+---
+
+## Troubleshooting
 
 | Masalah | Solusi |
 |---------|--------|
-| `Class 'App\Models\FailedJob' not found` | Run `php artisan optimize:clear` setelah file model dibuat |
-| White screen / 500 error | Cek `storage/logs/laravel.log`, aktifkan `APP_DEBUG=true` sementara |
-| Session tidak tersimpan | Pastikan tabel `sessions` sudah dibuat (`migrate --force`) |
-| File upload 404 | Periksa symlink `public/storage` |
-| Queue tidak jalan | Pastikan cron job / supervisor aktif |
+| `Class not found` | Jalankan `php composer dump-autoload --optimize` lalu `php artisan optimize:clear` |
+| White screen / 500 error | Aktifkan `APP_DEBUG=true` sementara, cek `storage/logs/laravel.log` |
+| Session tidak tersimpan | Pastikan tabel `sessions` sudah ada (`migrate --force`) |
+| File upload 404 | Periksa symlink: `ls -la public/storage` harus menunjuk ke `storage/app/public` |
 | Cache lama masih terbaca | Jalankan `php artisan config:clear && php artisan cache:clear` |
-| APP_KEY mismatch setelah deploy ulang | Gunakan key yang sama dari `.env` sebelumnya |
+| APP_KEY mismatch | Gunakan key yang sama dari `.env` sebelumnya, atau regenerate dan login ulang |
 | DB connection refused | Cek username/password di `.env`, pastikan user DB punya akses dari `127.0.0.1` |
-
----
-
-## Checklist Cepat (Print-friendly)
-
-```
-[ ] 1. Database created di cPanel
-[ ] 2. PHP version = 8.3+
-[ ] 3. File uploaded (tanpa vendor/)
-[ ] 4. composer install --no-dev --optimize-autoloader
-[ ] 5. .env copied & edited (DB_PASSWORD, MIDTRANS keys)
-[ ] 6. php artisan key:generate --force
-[ ] 7. php artisan migrate --force
-[ ] 8. Storage symlink dibuat
-[ ] 9. chmod 775 storage & bootstrap/cache
-[ ] 10. php artisan config:cache && route:cache && view:cache
-[ ] 11. AutoSSL dijalankan
-[ ] 12. Cron job queue worker dipasang
-[ ] 13. Verifikasi https://veyracreative.site/health
-```
