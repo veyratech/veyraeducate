@@ -80,6 +80,7 @@ _test-assets.ps1
 _test-guides.ps1
 _test-site.ps1
 _test-storage.ps1
+test-*.ps1
 login_page.html
 _home.html
 build-zip.ps1
