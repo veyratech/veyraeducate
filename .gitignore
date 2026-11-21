@@ -61,6 +61,9 @@ Thumbs.db
 # Composer lock (opsional — uncomment jika ingin commit)
 # composer.lock
 
+# Testing
+phpunit*.phar
+
 # Environment backups & staging
 .env.*.bak
 .staging/
