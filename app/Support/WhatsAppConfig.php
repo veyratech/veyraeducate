@@ -20,10 +20,10 @@ class WhatsAppConfig
     {
         $path = self::getPath();
         $defaults = [
-            'enabled' => (bool) env('WHATSAPP_ENABLED', false),
-            'gateway' => (string) env('WHATSAPP_GATEWAY', 'fonnte'),
-            'api_token' => (string) env('WHATSAPP_API_TOKEN', ''),
-            'sender_number' => (string) env('WHATSAPP_SENDER_NUMBER', ''),
+            'enabled' => (bool) self::readEnv('WHATSAPP_ENABLED'),
+            'gateway' => (string) self::readEnv('WHATSAPP_GATEWAY') ?: 'fonnte',
+            'api_token' => (string) self::readEnv('WHATSAPP_API_TOKEN'),
+            'sender_number' => (string) self::readEnv('WHATSAPP_SENDER_NUMBER'),
         ];
 
         if (! is_file($path)) {
@@ -48,5 +48,27 @@ class WhatsAppConfig
         $path = self::getPath();
         File::ensureDirectoryExists(dirname($path));
         File::put($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    }
+
+    protected static function readEnv(string $key): ?string
+    {
+        $envPath = base_path('.env');
+        if (! is_file($envPath)) {
+            return null;
+        }
+
+        foreach (file($envPath) as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+            if (preg_match('/^'.preg_quote($key, '/').'\s*=\s*(.+)/', $line, $matches)) {
+                $value = trim($matches[1], '"\'');
+
+                return $value !== '' ? $value : null;
+            }
+        }
+
+        return null;
     }
 }

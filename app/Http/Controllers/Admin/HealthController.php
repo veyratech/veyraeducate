@@ -131,7 +131,7 @@ class HealthController extends Controller
         ];
 
         // Midtrans
-        $midtransKey = ! empty(env('MIDTRANS_SERVER_KEY'));
+        $midtransKey = (bool) $this->readEnvValue('MIDTRANS_SERVER_KEY');
         $components['midtrans'] = [
             'ok' => $midtransKey,
             'label' => 'Midtrans',
@@ -139,8 +139,8 @@ class HealthController extends Controller
         ];
 
         // SSO
-        $ssoKey = ! empty(env('SSO_SECRET_KEY'));
-        $ssoUrl = env('SSO_CBT_URL', '');
+        $ssoKey = (bool) $this->readEnvValue('SSO_SECRET_KEY');
+        $ssoUrl = $this->readEnvValue('SSO_CBT_URL') ?: '—';
         $components['sso'] = [
             'ok' => $ssoKey,
             'label' => 'SSO',
@@ -200,6 +200,32 @@ class HealthController extends Controller
             'schedule_tasks' => $scheduleTasks,
             'updated_at' => now()->toIso8601String(),
         ];
+    }
+
+    /**
+     * Read an environment variable directly from .env file, bypassing Laravel's env()
+     * helper which returns null when config cache is enabled.
+     */
+    protected function readEnvValue(string $key): ?string
+    {
+        $path = base_path('.env');
+        if (! is_file($path)) {
+            return null;
+        }
+
+        foreach (file($path) as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+            if (preg_match('/^'.preg_quote($key, '/').'\s*=\s*(.+)/', $line, $matches)) {
+                $value = trim($matches[1], '"\'');
+
+                return $value !== '' ? $value : null;
+            }
+        }
+
+        return null;
     }
 
     /**

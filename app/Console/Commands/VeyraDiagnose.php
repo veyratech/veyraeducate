@@ -94,11 +94,11 @@ class VeyraDiagnose extends Command
             $exitCode = 1;
         }
 
-        $midtransKey = ! empty(env('MIDTRANS_SERVER_KEY'));
-        $this->outputCheck('MIDTRANS_KEY', $midtransKey ? 'set' : 'kosong', $midtransKey);
+        $midtransKey = $this->getEnvValue('MIDTRANS_SERVER_KEY');
+        $this->outputCheck('MIDTRANS_SERVER_KEY', $midtransKey ? 'set' : 'kosong', (bool) $midtransKey);
 
-        $ssoKey = ! empty(env('SSO_SECRET_KEY'));
-        $this->outputCheck('SSO_SECRET_KEY', $ssoKey ? 'set' : 'kosong', $ssoKey);
+        $ssoKey = $this->getEnvValue('SSO_SECRET_KEY');
+        $this->outputCheck('SSO_SECRET_KEY', $ssoKey ? 'set' : 'kosong', (bool) $ssoKey);
 
         // 6. School apps on disk
         $this->section('School Apps');
@@ -157,5 +157,31 @@ class VeyraDiagnose extends Command
         if (! $ok) {
             $this->error("  {$name} bermasalah!");
         }
+    }
+
+    /**
+     * Read an environment variable directly from .env file, bypassing Laravel's env()
+     * helper which returns null when config cache is enabled.
+     */
+    protected function getEnvValue(string $key): ?string
+    {
+        $path = base_path('.env');
+        if (! is_file($path)) {
+            return null;
+        }
+
+        foreach (file($path) as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+            if (preg_match('/^'.preg_quote($key, '/').'\s*=\s*(.+)/', $line, $matches)) {
+                $value = trim($matches[1], '"\'');
+
+                return $value !== '' ? $value : null;
+            }
+        }
+
+        return null;
     }
 }

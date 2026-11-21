@@ -145,7 +145,7 @@ class CbtStatsService
         $password = (string) config('database.connections.mysql.password', '');
 
         $candidateDbs = array_values(array_unique(array_filter([
-            (string) env('CBT_DB_DATABASE', ''),
+            (string) $this->readEnvValue('CBT_DB_DATABASE'),
             app()->environment('production') ? 'u77oazzk_cbtonline' : 'cbtonline_db',
             'cbtonline_db',
         ])));
@@ -386,5 +386,31 @@ class CbtStatsService
             'active_exams' => [],
             'synced_at' => now()->toIso8601String(),
         ];
+    }
+
+    /**
+     * Read an environment variable directly from .env file, bypassing Laravel's env()
+     * helper which returns null when config cache is enabled.
+     */
+    protected function readEnvValue(string $key): ?string
+    {
+        $path = base_path('.env');
+        if (! is_file($path)) {
+            return null;
+        }
+
+        foreach (file($path) as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+            if (preg_match('/^'.preg_quote($key, '/').'\s*=\s*(.+)/', $line, $matches)) {
+                $value = trim($matches[1], '"\'');
+
+                return $value !== '' ? $value : null;
+            }
+        }
+
+        return null;
     }
 }
