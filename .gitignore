@@ -82,6 +82,11 @@ _test-site.ps1
 _test-storage.ps1
 login_page.html
 _home.html
+build-zip.ps1
+check-storage.ps1
+find_405.php
+get-error.ps1
+verify-storage.ps1
 
 # Generated bootstrap cache (machine-specific, should not be committed)
 bootstrap/cache/config.php
