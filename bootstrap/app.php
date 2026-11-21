@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureActiveSubscription;
 use App\Http\Middleware\EnsureSuperAdmin;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\HttpsRedirect;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetupSchoolScope;
 use App\Http\Middleware\TrackSchoolAppAccess;
 use Illuminate\Foundation\Application;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->prepend(SetupSchoolScope::class);
+        $middleware->prepend(SecurityHeaders::class);
 
         $middleware->redirectGuestsTo(function (Request $request): string {
             if ($request->is('admin') || $request->is('admin/*')) {
