@@ -60,3 +60,32 @@ Thumbs.db
 
 # Composer lock (opsional — uncomment jika ingin commit)
 # composer.lock
+
+# Environment backups & staging
+.env.*.bak
+.staging/
+backend/
+
+# Temporary dev scripts & test files
+_check.ps1
+_gitlog.ps1
+_get-error.ps1
+_build-zip.ps1
+_find-405.php
+_test-storage-path.php
+_check-storage.ps1
+_verify-storage.ps1
+_test-admin-guides.ps1
+_test-assets.ps1
+_test-guides.ps1
+_test-site.ps1
+_test-storage.ps1
+login_page.html
+_home.html
+
+# Generated bootstrap cache (machine-specific, should not be committed)
+bootstrap/cache/config.php
+bootstrap/cache/events.php
+bootstrap/cache/packages.php
+bootstrap/cache/routes-v7.php
+bootstrap/cache/services.php
