@@ -26,6 +26,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // On servers where the finfo extension or \finfo class is unavailable,
+        // replace Symfony MimeTypes default so it never instantiates FileinfoMimeTypeGuesser
+        // (which calls new \finfo(...)) and only uses the binary "file" command approach.
+        if (!class_exists(\finfo::class, false) && class_exists(\Symfony\Component\Mime\MimeTypes::class)) {
+            $binaryGuesser = new \Symfony\Component\Mime\FileBinaryMimeTypeGuesser();
+            \Symfony\Component\Mime\MimeTypes::setDefault(new \Symfony\Component\Mime\MimeTypes([], [$binaryGuesser]));
+        }
+
         MidtransConfig::apply();
         InvoiceConfig::apply();
 

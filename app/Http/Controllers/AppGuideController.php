@@ -8,8 +8,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AppGuideController extends Controller
 {
@@ -159,7 +157,7 @@ class AppGuideController extends Controller
     /**
      * Preview the specified application guide inline in browser (for PDF/TXT).
      */
-    public function preview(AppGuide $guide): StreamedResponse|BinaryFileResponse
+    public function preview(AppGuide $guide): void
     {
         if (!Storage::disk('public')->exists($guide->file_path)) {
             abort(404, 'File buku panduan tidak ditemukan.');
@@ -167,15 +165,22 @@ class AppGuideController extends Controller
 
         $guide->increment('download_count');
 
-        return Storage::disk('public')->response($guide->file_path, $guide->file_name, [
-            'Content-Disposition' => 'inline; filename="' . addslashes($guide->file_name) . '"',
-        ]);
+        $fullPath = Storage::disk('public')->path($guide->file_path);
+
+        // Detect MIME type safely without depending on finfo extension
+        $mimeType = $this->guessMimeType($fullPath, $guide->file_type);
+
+        header('Content-Type: ' . $mimeType);
+        header('Content-Disposition: inline; filename="' . addslashes($guide->file_name) . '"');
+        header('Cache-Control: public, max-age=31536000, immutable');
+        readfile($fullPath);
+        exit;
     }
 
     /**
      * Download the specified application guide file.
      */
-    public function download(AppGuide $guide): StreamedResponse|BinaryFileResponse
+    public function download(AppGuide $guide): void
     {
         if (!Storage::disk('public')->exists($guide->file_path)) {
             abort(404, 'File buku panduan tidak ditemukan.');
@@ -183,7 +188,55 @@ class AppGuideController extends Controller
 
         $guide->increment('download_count');
 
-        return Storage::disk('public')->download($guide->file_path, $guide->file_name);
+        $fullPath = Storage::disk('public')->path($guide->file_path);
+
+        // Detect MIME type safely without depending on finfo extension
+        $mimeType = $this->guessMimeType($fullPath, $guide->file_type);
+
+        header('Content-Type: ' . $mimeType);
+        header('Content-Disposition: attachment; filename="' . addslashes($guide->file_name) . '"');
+        header('Cache-Control: public, max-age=31536000, immutable');
+        readfile($fullPath);
+        exit;
+    }
+
+    /**
+     * Safely guess MIME type — falls back to stored file_type when finfo unavailable.
+     */
+    protected function guessMimeType(string $path, string $storedType = ''): string
+    {
+        $defaults = [
+            'pdf'  => 'application/pdf',
+            'doc'  => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'ppt'  => 'application/vnd.ms-powerpoint',
+            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'xls'  => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'zip'  => 'application/zip',
+            'txt'  => 'text/plain',
+        ];
+
+        // Use stored type as primary fallback
+        if ($storedType && isset($defaults[strtolower($storedType)])) {
+            return $defaults[strtolower($storedType)];
+        }
+
+        // Try finfo only if available and functional
+        if (class_exists('finfo') && function_exists('finfo_open')) {
+            try {
+                $f = finfo_open(FILEINFO_MIME_TYPE);
+                if ($f) {
+                    $result = @finfo_file($f, $path);
+                    finfo_close($f);
+                    if ($result !== false && $result !== '') {
+                        return $result;
+                    }
+                }
+            } catch (\Throwable $e) { /* ignore */ }
+        }
+
+        return 'application/octet-stream';
     }
 
     /**

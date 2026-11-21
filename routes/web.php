@@ -26,21 +26,26 @@ use Illuminate\Support\Facades\Storage;
 
 // Custom storage file serving — served directly via readfile() to avoid finfo dependency
 Route::get('storage/{path}', function (string $path) {
-    $cleanPath = str_replace(['..', "\0"], '', $path);
+    try {
+        $cleanPath = str_replace(['..', "\0"], '', $path);
 
-    if ($cleanPath === '') {
-        abort(404, 'Empty storage path');
+        if ($cleanPath === '') {
+            abort(404, 'Empty storage path');
+        }
+
+        $fullPath = storage_path('app/public/' . $cleanPath);
+
+        if (!file_exists($fullPath)) {
+            return response()->json(['error' => 'File not found', 'path' => $cleanPath], 404);
+        }
+
+        header('Cache-Control: public, max-age=31536000, immutable');
+        readfile($fullPath);
+        exit;
+    } catch (\Throwable $e) {
+        report($e);
+        return response()->json(['error' => 'Internal storage error', 'message' => class_basename($e)], 500);
     }
-
-    $fullPath = storage_path('app/public/' . $cleanPath);
-
-    if (!file_exists($fullPath)) {
-        return response()->json(['error' => 'File not found', 'path' => $cleanPath], 404);
-    }
-
-    header('Cache-Control: public, max-age=31536000, immutable');
-    readfile($fullPath);
-    exit;
 })->where('path', '.*')->name('storage.fallback');
 
 Route::middleware(['https.redirect', 'throttle:global'])->group(function () {

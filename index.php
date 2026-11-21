@@ -83,7 +83,7 @@ if (! $bootstrapFile) {
 $app = require_once $bootstrapFile;
 
 if (method_exists($app, 'usePublicPath')) {
-    $app->usePublicPath(__DIR__);
+    $app->usePublicPath(__DIR__.'/public');
 }
 
 if (! file_exists($app->environmentPath().'/.env') && file_exists(__DIR__.'/.env')) {

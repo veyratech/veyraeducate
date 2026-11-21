@@ -116,12 +116,19 @@ class AppGuideController extends Controller
         $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
         // If no extension found, try guessing from content if finfo available
+        // Use defined() check to avoid "undefined constant" errors on servers without finfo
+        $finfoExtConstant = defined('FILEINFO_EXTENSION') ? FILEINFO_EXTENSION : '2';
         if (empty($extension) && function_exists('finfo_open')) {
             try {
                 $resource = fopen($uploadedFile->getPathname(), 'r');
                 if ($resource) {
-                    $f = finfo_open(FILEINFO_EXTENSION);
-                    $extension = strtolower(finfo_file($f, $resource));
+                    $f = finfo_open($finfoExtConstant);
+                    if ($f) {
+                        $detected = @strtolower(finfo_file($f, $resource));
+                        if ($detected) {
+                            $extension = $detected;
+                        }
+                    }
                     finfo_close($f);
                     fclose($resource);
                 }
@@ -167,10 +174,25 @@ class AppGuideController extends Controller
                 $disk->makeDirectory($directory, 0755, true);
             }
 
-            // Try to store the file
-            $filePath = $uploadedFile->store($directory, 'public');
+            // Use manual move instead of store() to avoid Flysystem/Laravel MIME detection
+            // that can crash servers without the finfo PHP extension.
+            $safeName = preg_replace('/[^a-zA-Z0-9_.\\-]/', '_', $originalName);
+            if (empty($safeName) || !str_contains($safeName, '.')) {
+                $safeName = 'guide_' . time() . '.' . $extension;
+            } else {
+                $base = pathinfo($safeName, PATHINFO_FILENAME);
+                $safeName = $base . '.' . $extension;
+            }
+            $destinationPath = $directory . '/' . $safeName;
 
-            if (empty($filePath) || !$disk->exists($filePath)) {
+            $source = fopen($uploadedFile->getPathname(), 'rb');
+            if ($source === false) {
+                return redirect()->back()->withInput()->withErrors(['file' => 'Gagal membuka file sumber.']);
+            }
+            $success = $disk->writeStream($destinationPath, $source);
+            fclose($source);
+
+            if (!$success) {
                 return redirect()->back()->withInput()->withErrors(['file' => 'Gagal menyimpan file ke server. Pastikan folder storage/app/public dapat ditulis.']);
             }
 
@@ -183,7 +205,7 @@ class AppGuideController extends Controller
                 'description' => $description ?: null,
                 'version' => $version ?: null,
                 'category' => $category,
-                'file_path' => $filePath,
+                'file_path' => $destinationPath,
                 'file_name' => $originalName,
                 'file_size' => $fileSize,
                 'file_type' => $extension,
@@ -196,13 +218,14 @@ class AppGuideController extends Controller
         } catch (TokenMismatchException $e) {
             return redirect()->back()->withInput()->withErrors(['_token' => 'Sesi berakhir. Silakan coba unggah ulang.']);
         } catch (\Throwable $e) {
-            \Log::error('AppGuide store failed: ' . $e->getMessage(), [
-                'exception_class' => get_class($e),
-                'trace' => substr($e->getTraceAsString(), 0, 500),
+            \Log::error('AppGuide store failed: [' . get_class($e) . '] ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace_sample' => substr(str_replace(PHP_EOL . '  -> ', PHP_EOL, $e->getTraceAsString()), 0, 1000),
             ]);
 
             return redirect()->back()->withInput()->withErrors([
-                'file' => 'Error: ' . substr($e->getMessage(), 0, 150) . '. Silakan coba lagi.',
+                'file' => 'Error: ' . $e->getMessage() . '. Silakan coba lagi.',
             ]);
         }
     }
@@ -247,12 +270,18 @@ class AppGuideController extends Controller
             }
 
             $extension = strtolower(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_EXTENSION));
+            $finfoExtConstant = defined('FILEINFO_EXTENSION') ? FILEINFO_EXTENSION : '2';
             if (empty($extension) && function_exists('finfo_open')) {
                 try {
                     $resource = fopen($uploadedFile->getPathname(), 'r');
                     if ($resource) {
-                        $f = finfo_open(FILEINFO_EXTENSION);
-                        $extension = strtolower(finfo_file($f, $resource));
+                        $f = finfo_open($finfoExtConstant);
+                        if ($f) {
+                            $detected = @strtolower(finfo_file($f, $resource));
+                            if ($detected) {
+                                $extension = $detected;
+                            }
+                        }
                         finfo_close($f);
                         fclose($resource);
                     }
@@ -267,12 +296,26 @@ class AppGuideController extends Controller
                 Storage::disk('public')->delete($guide->file_path);
             }
 
-            $filePath = $uploadedFile->store('guides', 'public');
-            if (!empty($filePath)) {
-                $payload['file_path'] = $filePath;
-                $payload['file_name'] = $uploadedFile->getClientOriginalName();
-                $payload['file_size'] = $fileSize;
-                $payload['file_type'] = $extension;
+            // Use writeStream to avoid Flysystem internal MIME detection (finfo dependency).
+            $safeName = preg_replace('/[^a-zA-Z0-9_.\\-]/', '_', $uploadedFile->getClientOriginalName());
+            if (empty($safeName) || !str_contains($safeName, '.')) {
+                $safeName = 'guide_' . time() . '.' . $extension;
+            } else {
+                $base = pathinfo($safeName, PATHINFO_FILENAME);
+                $safeName = $base . '.' . $extension;
+            }
+            $destinationPath = 'guides/' . $safeName;
+
+            $source = fopen($uploadedFile->getPathname(), 'rb');
+            if ($source !== false) {
+                $written = Storage::disk('public')->writeStream($destinationPath, $source);
+                fclose($source);
+                if ($written) {
+                    $payload['file_path'] = $destinationPath;
+                    $payload['file_name'] = $uploadedFile->getClientOriginalName();
+                    $payload['file_size'] = $fileSize;
+                    $payload['file_type'] = $extension;
+                }
             }
         }
 
