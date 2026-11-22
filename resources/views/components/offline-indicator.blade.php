@@ -1,21 +1,24 @@
 {{-- Offline & Online Connection Status Banner --}}
 <div
     x-data="{
-        isOnline: navigator.onLine,
+        isOnline: true,
         showReconnected: false,
         timeoutId: null,
         init() {
+            const checkConnection = () => {
+                fetch('/health', { method: 'GET', cache: 'no-store' })
+                    .then(response => { this.isOnline = response.ok; })
+                    .catch(() => { this.isOnline = false; });
+            };
+
+            checkConnection();
+            setInterval(checkConnection, 15000);
+
             window.addEventListener('online', () => {
                 this.isOnline = true;
                 this.showReconnected = true;
                 clearTimeout(this.timeoutId);
-                this.timeoutId = setTimeout(() => {
-                    this.showReconnected = false;
-                }, 3500);
-            });
-            window.addEventListener('offline', () => {
-                this.isOnline = false;
-                this.showReconnected = false;
+                this.timeoutId = setTimeout(() => { this.showReconnected = false; }, 3500);
             });
         }
     }"
@@ -29,7 +32,7 @@
         x-transition:enter-end="translate-y-0 opacity-100"
         x-transition:leave="ease-in duration-200"
         x-transition:leave-start="translate-y-0 opacity-100"
-        x-transition:leave-end="-translate-y-full opacity-0"
+        x-transition:leave-end="translate-y-full opacity-0"
         class="fixed top-0 inset-x-0 z-[120] bg-gradient-to-r from-amber-600 via-rose-600 to-amber-600 text-white shadow-xl border-b border-amber-300/30 px-3 py-2 sm:py-2.5 backdrop-blur-md safe-area-top"
         role="alert"
     >
@@ -63,7 +66,7 @@
         x-transition:enter-end="translate-y-0 opacity-100"
         x-transition:leave="ease-in duration-200"
         x-transition:leave-start="translate-y-0 opacity-100"
-        x-transition:leave-end="-translate-y-full opacity-0"
+        x-transition:leave-end="translate-y-full opacity-0"
         class="fixed top-0 inset-x-0 z-[120] bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white shadow-xl border-b border-emerald-300/30 px-3 py-2 sm:py-2.5 backdrop-blur-md safe-area-top"
         role="status"
     >
