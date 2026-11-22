@@ -29,6 +29,9 @@
         </nav>
 
         <div class="flex items-center gap-1 sm:gap-2">
+            {{-- PWA Install Button --}}
+            <x-pwa-install-button variant="pill" />
+
             {{-- Quick Search (Ctrl+K) Trigger --}}
             <button
                 type="button"

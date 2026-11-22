@@ -6,8 +6,9 @@
         timeoutId: null,
         init() {
             const checkConnection = () => {
-                fetch('/health', { method: 'GET', cache: 'no-store' })
-                    .then(response => { this.isOnline = response.ok; })
+                const url = new URL('health', window.location.href.replace(/\/+$/, '/') + 'health');
+                fetch(url.href, { method: 'GET', cache: 'no-store' })
+                    .then(response => { this.isOnline = response.status >= 200 && response.status < 400; })
                     .catch(() => { this.isOnline = false; });
             };
 
