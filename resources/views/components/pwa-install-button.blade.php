@@ -49,6 +49,9 @@
                     }
                     window.deferredPWAInstallPrompt = null;
                 } catch (e) {
+                    // Prompt sudah dimakan browser (user tutup banner Chrome secara tidak sengaja)
+                    // Tampilkan modal panduan manual sebagai fallback
+                    window.deferredPWAInstallPrompt = null;
                     this.showModal = true;
                 }
             } else {
